@@ -1,4 +1,5 @@
 def normalize_events(events):
+    events = [{k: v for k, v in e.items() if k != "_id"} for e in events]
     # Sort by timestamp
     events = sorted(events, key=lambda e: e["timestamp"])
 
