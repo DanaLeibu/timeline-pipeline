@@ -1,4 +1,3 @@
-// metrics/metrics.module.ts
 import { Module } from '@nestjs/common';
 import { MetricsService } from './metrics.service';
 

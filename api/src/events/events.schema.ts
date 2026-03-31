@@ -12,7 +12,7 @@ export class EventRecord {
     @Prop({required: true})
     eventId: string;
 
-    @Prop({enum: EventType ,required: true})
+    @Prop({type: String,enum: EventType ,required: true})
     type: EventType
 
     @Prop({required: true})

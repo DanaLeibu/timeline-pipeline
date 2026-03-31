@@ -3,7 +3,7 @@ import { MetricsService } from './metrics/metrics.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly MetricsService: MetricsService) {}
+  constructor(private readonly metricsService: MetricsService) {}
 
   @Get('health')
   getHealth() {
@@ -11,8 +11,8 @@ export class AppController {
   }
 
   @Get('metrics')
-  GetMetrics() {
-    return this.MetricsService.getMetrics();
+  getMetrics() {
+    return this.metricsService.getMetrics();
   } 
 
 
