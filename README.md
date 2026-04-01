@@ -7,13 +7,13 @@ Build a clean session timeline from raw video events, handling delays, duplicate
 
 The system is built from two separate services that communicate through MongoDB:
 
-- **NestJS API** — the server. Receives raw events, validates them, saves to MongoDB, and serves the normalized timelines.
+- **NestJS API** — Receives raw events, validates them, saves to MongoDB, and serves the normalized timelines.
 - **Python Worker** — runs in the background. Polls MongoDB for new events, normalizes them, and writes the clean timeline back to MongoDB.
 
 ### Flow
 
 1. Client sends a raw event to NestJS (`POST /events`)
-2. NestJS validates it and saves it to the `events` collection with `processed: false`
+2. NestJS validates it and saves it to the `events` collection with flag `processed: false`
 3. Python worker checks every 5 seconds for unprocessed events
 4. When it finds new events, it sorts them, removes duplicates, collapses near-identical ones, and flags state issues
 5. It saves the clean timeline to the `timelines` collection and marks the events as `processed: true`
@@ -44,8 +44,8 @@ I chose MongoDB because both NestJS and Python have solid libraries for it (Mong
 - **Duplicate check with findOne**: I check for duplicate `eventId` using a database query before saving. A unique index on `eventId` would catch it at the DB level, but `findOne` gives me control to count the duplicate in metrics before rejecting it.
 - **In-memory metrics**: The counters (ingested, duplicates, inconsistent) live in memory. They reset when the server restarts. For production I would store them in the database, but for this scope it keeps things simple.
 - **Polling instead of message queue**: The worker polls MongoDB every 5 seconds. A message queue (like RabbitMQ) would notify the worker immediately when a new event arrives, but it adds another service to manage. Polling is simple and good enough here.
-- **MongoDB as the bridge**: Both services read and write to the same database. No extra protocol or communication layer needed. Simple and reliable for a small system.
-- **Splitting normalization between NestJS and Python**: Deduplication and inconsistency are checked on ingestion. Sorting, collapsing, and state recovery run in the worker because they need to see all events of a session at once.
+- **MongoDB**: Both services read and write to the same database. No extra protocol or communication layer needed. Simple and reliable for a small system.
+- **normalization**: Validation checked on ingestion. Sorting, collapsing, and state recovery run in the worker because they need to see all events of a session at once.
 
 ## Testing
 
@@ -57,11 +57,21 @@ I chose MongoDB because both NestJS and Python have solid libraries for it (Mong
 - Python 3.10+
 - MongoDB running locally on port 27017
 
+
 ### API
 ```bash
 cd api
 npm install
 npm run start:dev
+```
+
+### worker
+```bash
+cd worker
+pip install -r requirements.txt
+python worker.py
+```
 
 ## If I Had 1 More Day, I Would...
 add a Docker file and add a webhook (instead of client polling)
+
